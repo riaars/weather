@@ -89,6 +89,10 @@ body {
   margin: 0 10px 0 10px;
 }
 
+.error-message {
+  align-items: center;
+}
+
 @media screen and (max-width: 426px) {
   .App {
     height: fit-content;

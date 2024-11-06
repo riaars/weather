@@ -1,58 +1,23 @@
 import { useEffect, useState } from "react";
 
-import "./App.css";
-import { API_URL } from "./config/API";
 import Weather from "./Weather";
+import Search from "./Search";
+import CurrentWeather from "./CurrentWeather";
+
 import { ItemWeatherProps } from "./props/WeatherProps";
-import { API_KEY } from "./config/API_KEY";
+
+import { useSearchWeatherByCity } from "./hooks/useSearchWeatherByCity";
+import { useForecastWeather } from "./hooks/useForecastWeather";
+
+import "./App.css";
 
 function App() {
   const [city, setCity] = useState("Stockholm");
-  const [weather, setWeather] = useState<ItemWeatherProps>();
-  const [forecast, setForecast] = useState<any>([]);
 
-  const [loadingCurrentWeather, setLoadingCurrentWeather] = useState(false);
-  const [loadingForecast, setLoadingForecast] = useState(false);
-
-  const [searchError, setSearchError] = useState<any>();
-
-  async function searchWeatherByCity(city: string) {
-    const url = `${API_URL}weather?q=${city}&APPID=${API_KEY}&units=metric`;
-    setSearchError(null);
-    setLoadingCurrentWeather(true);
-
-    try {
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error(`Data not available`);
-      }
-      const json = await response.json();
-      setWeather(json);
-      setLoadingCurrentWeather(false);
-    } catch (error: any) {
-      setLoadingCurrentWeather(false);
-      setSearchError(error);
-    }
-  }
-
-  async function forecastWeather(city: string) {
-    const url = `${API_URL}forecast?q=${city}&appid=${API_KEY}&units=metric`;
-    setSearchError(null);
-    setLoadingForecast(true);
-
-    try {
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error(`Data not available`);
-      }
-      const json = await response.json();
-      setForecast(json);
-      setLoadingForecast(false);
-    } catch (error: any) {
-      setSearchError(error);
-      setLoadingForecast(false);
-    }
-  }
+  const { loadingCurrentWeather, searchWeatherByCity, weather } =
+    useSearchWeatherByCity(city);
+  const { forecast, loadingForecast, searchForecastError, forecastWeather } =
+    useForecastWeather(city);
 
   useEffect(() => {
     searchWeatherByCity(city);
@@ -64,18 +29,6 @@ function App() {
     forecastWeather(city);
   };
 
-  const currentDate = new Date();
-  const daysOfWeek = [
-    "Sunday",
-    "Monday",
-    "Tuesday",
-    "Wednesday",
-    "Thursday",
-    "Friday",
-    "Saturday",
-  ];
-  const currentDay = daysOfWeek[currentDate.getDay()];
-
   //get first 5 temp forecast from now
   const latest_forecast = forecast?.list?.slice(0, 5);
 
@@ -83,38 +36,18 @@ function App() {
     <div className="App">
       <div className="main">
         <div>
-          <div className="search-menu">
-            <input
-              className="input-search"
-              onChange={(e) => setCity(e.target.value)}
-              placeholder="Enter a city..."
-              value={city}
-            />
-            <button className="btn-primary" onClick={() => handleUserSearch()}>
-              Search
-            </button>
-          </div>
-
+          <Search
+            value={city}
+            onChange={(e) => setCity(e.target.value)}
+            onClick={handleUserSearch}
+          />
           {loadingCurrentWeather || loadingForecast ? (
             <div>Loading...</div>
-          ) : searchError ? (
-            <div> {searchError.message} </div>
+          ) : searchForecastError ? (
+            <div className="error-message"> {searchForecastError.message} </div>
           ) : (
             <>
-              <div className="current-weather-wrapper">
-                <img
-                  src={`https://openweathermap.org/img/wn/${weather?.weather[0].icon}@4x.png`}
-                  alt="Weather Icon"
-                />
-                <div className="current-weather-group">
-                  <div className="current-weather">{weather?.main.temp} °C</div>
-                  <div className="city">{weather?.name}</div>
-                  <div>
-                    {currentDay + " " + currentDate.toLocaleTimeString()}
-                  </div>
-                </div>
-              </div>
-
+              {weather && <CurrentWeather item={weather} />}
               <div className="flex-row">
                 {latest_forecast?.map((item: ItemWeatherProps) => (
                   <Weather item={item} key={item.dt} />
