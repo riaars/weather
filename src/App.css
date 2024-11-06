@@ -91,7 +91,7 @@ body {
 
 @media screen and (max-width: 426px) {
   .App {
-    min-height: 100%;
+    height: fit-content;
   }
   .main {
     padding: 5em 1em 5em 1em;
