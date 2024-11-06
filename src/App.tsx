@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 
 import "./App.css";
-import { API_URL, API_KEY } from "./API";
+import { API_URL } from "./config/API";
 import Weather from "./Weather";
 import { ItemWeatherProps } from "./props/WeatherProps";
+import { API_KEY } from "./config/API_KEY";
 
 function App() {
   const [city, setCity] = useState("Stockholm");
